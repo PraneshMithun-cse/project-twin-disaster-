@@ -2188,6 +2188,33 @@ Return JSON response:
       };
     }
 
+    if (supabase && parsed) {
+      try {
+        supabase.from('simulations').insert([{
+          id: `sim-${Date.now()}`,
+          title: `What-If Simulation (${params?.rainfallMmHr || 120}mm/hr)`,
+          rainfall_mm_hr: params?.rainfallMmHr || 120,
+          dam_discharge_m3s: params?.chembarambakkamReleaseM3s || 1500,
+          canal_blockage_pct: params?.canalBlockagePct || 75,
+          bridge_status: params?.bridgeStatus || 'restricted',
+          duration_hours: params?.durationHours || 3,
+          high_tide_overlap: !!params?.highTideOverlap,
+          mitigations_applied: mitigations || {},
+          affected_zones_count: parsed.affectedZonesCount || 0,
+          predicted_submerged_area_km2: parsed.predictedSubmergedAreaKm2 || 0,
+          estimated_affected_people: parsed.estimatedAffectedPeople || 0,
+          critical_road_blocks: parsed.criticalRoadBlocks || [],
+          recommended_deployments: parsed.recommendedDeployments || [],
+          risk_timeline: parsed.riskTimeline || [],
+          ai_summary: parsed.aiSummary || ''
+        }]).then(({ error }) => {
+          if (error) console.warn('Supabase simulation log warning:', error.message);
+        });
+      } catch (e) {
+        // Non-blocking catch
+      }
+    }
+
     res.json({ success: true, data: parsed });
   } catch (err: any) {
     console.error('Error in simulate:', err);

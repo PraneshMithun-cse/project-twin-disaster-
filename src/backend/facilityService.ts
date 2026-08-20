@@ -21,6 +21,12 @@ import {
 import { SAI_FIREWORKS_FACILITY, SAI_FIREWORKS_EMPLOYEES } from './facilityBlueprintSeed.js';
 import { sendWhatsAppBatch, normalisePhone, getActiveProvider } from './whatsappService.js';
 
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
+
 const facilities: Map<string, Facility> = new Map();
 const employeesByFacility: Map<string, Employee[]> = new Map();
 const incidents: Map<string, FacilityIncident> = new Map();
@@ -28,6 +34,35 @@ const dispatches: WhatsAppDispatch[] = [];
 
 facilities.set(SAI_FIREWORKS_FACILITY.id, SAI_FIREWORKS_FACILITY);
 employeesByFacility.set(SAI_FIREWORKS_FACILITY.id, [...SAI_FIREWORKS_EMPLOYEES]);
+
+// Hydrate from Supabase on boot if connected
+if (supabase) {
+  (async () => {
+    try {
+      const { data } = await supabase.from('facilities').select('*');
+      if (data && data.length > 0) {
+        data.forEach((f: any) => {
+          const fac: Facility = {
+            id: f.id,
+            name: f.name,
+            industry: f.industry,
+            address: f.address,
+            lat: f.coordinates?.[0] || 13.08,
+            lng: f.coordinates?.[1] || 80.27,
+            licenceNo: f.licence_no,
+            safetyOfficer: f.safety_officer,
+            safetyOfficerPhone: f.safety_officer_phone,
+            blueprint: f.blueprint_data || f.blueprint,
+            createdAt: f.created_at
+          };
+          facilities.set(fac.id, fac);
+        });
+      }
+    } catch (err: any) {
+      console.warn('Supabase facilities hydration skipped:', err?.message || err);
+    }
+  })();
+}
 
 const uid = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -69,6 +104,25 @@ export function createFacility(input: Partial<Facility>): Facility {
   };
   facilities.set(facility.id, facility);
   if (!employeesByFacility.has(facility.id)) employeesByFacility.set(facility.id, []);
+
+  if (supabase) {
+    supabase.from('facilities').upsert({
+      id: facility.id,
+      name: facility.name,
+      industry: facility.industry,
+      address: facility.address,
+      coordinates: [facility.lat, facility.lng],
+      licence_no: facility.licenceNo,
+      safety_officer: facility.safetyOfficer || 'Safety Desk',
+      safety_officer_phone: facility.safetyOfficerPhone || '+91 90000 00000',
+      blueprint_width_m: facility.blueprint?.widthM || 240,
+      blueprint_height_m: facility.blueprint?.heightM || 150,
+      blueprint_data: facility.blueprint
+    }).then(({ error }) => {
+      if (error) console.warn('Supabase createFacility error:', error.message);
+    });
+  }
+
   return facility;
 }
 
@@ -77,6 +131,25 @@ export function updateFacility(id: string, patch: Partial<Facility>): Facility |
   if (!existing) return undefined;
   const merged: Facility = { ...existing, ...patch, id: existing.id, createdAt: existing.createdAt };
   facilities.set(id, merged);
+
+  if (supabase) {
+    supabase.from('facilities').upsert({
+      id: merged.id,
+      name: merged.name,
+      industry: merged.industry,
+      address: merged.address,
+      coordinates: [merged.lat, merged.lng],
+      licence_no: merged.licenceNo,
+      safety_officer: merged.safetyOfficer || 'Safety Desk',
+      safety_officer_phone: merged.safetyOfficerPhone || '+91 90000 00000',
+      blueprint_width_m: merged.blueprint?.widthM || 240,
+      blueprint_height_m: merged.blueprint?.heightM || 150,
+      blueprint_data: merged.blueprint
+    }).then(({ error }) => {
+      if (error) console.warn('Supabase updateFacility error:', error.message);
+    });
+  }
+
   return merged;
 }
 
@@ -85,6 +158,17 @@ export function saveBlueprint(id: string, blueprint: FacilityBlueprint): Facilit
   if (!existing) return undefined;
   existing.blueprint = blueprint;
   facilities.set(id, existing);
+
+  if (supabase) {
+    supabase.from('facilities').update({
+      blueprint_width_m: blueprint.widthM || 240,
+      blueprint_height_m: blueprint.heightM || 150,
+      blueprint_data: blueprint
+    }).eq('id', id).then(({ error }) => {
+      if (error) console.warn('Supabase saveBlueprint error:', error.message);
+    });
+  }
+
   return existing;
 }
 

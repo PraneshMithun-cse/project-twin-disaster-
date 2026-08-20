@@ -9,3 +9,4 @@ coverage/
 
 # Orphaned Squarespace clone scaffold (own git repo, 768MB) — not part of this project
 ai-website-cloner-template/
+.vercel

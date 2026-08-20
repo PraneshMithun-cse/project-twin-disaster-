@@ -11,9 +11,29 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY ||
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkSupabase() {
-  console.log('🔍 Inspecting Supabase Tables via REST API...');
+  console.log('🔍 Inspecting Supabase Tables via REST API for All 18 Schema Tables...');
 
-  const tables = ['reports', 'risk_zones', 'shelters', 'resources', 'decision_knowledge', 'simulations', 'hospitals'];
+  const tables = [
+    'reports',
+    'risk_zones',
+    'iot_sensors',
+    'shelters',
+    'resources',
+    'hospitals',
+    'evacuation_routes',
+    'facilities',
+    'facility_zones',
+    'blueprint_sensors',
+    'muster_hubs',
+    'exit_routes',
+    'facility_employees',
+    'facility_incidents',
+    'whatsapp_dispatches',
+    'agent_logs',
+    'xai_recommendations',
+    'decision_knowledge',
+    'simulations'
+  ];
 
   for (const table of tables) {
     try {
