@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #d25f38;
+  --color-brand-deep: #a54121;
+  --color-accent: #2e8b57;
+  --color-ink: #0a0a0f;
+  --color-card: #0e0e14;
+  --color-border: #ffffff12;
+  --color-signal-critical: #ef4444;
+  --color-signal-advisory: #f59e0b;
+  --color-signal-info: #3b82f6;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', 'Space Grotesk', monospace;
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-breathe: breathe 2.5s ease-in-out infinite;
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.6; transform: scale(0.95); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+}
+
+body {
+  background-color: #050507;
+  color: #e0e0e6;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.font-display {
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.mono {
+  font-family: 'Geist Mono', 'Space Grotesk', monospace;
+}
+
+/* Dot grid backgrounds */
+.dot-grid-light {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.dot-grid-on-ink {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.reveal {
+  opacity: 1;
+}
+
+/* Animations */
+@keyframes ping-soft {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.animate-ping-soft {
+  animation: ping-soft 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.lift-strong {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lift-strong:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+}
+
+.lift {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── Scrollbar Theming ───────────────────────────────────────────── */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(210, 95, 56, 0.4) #08080c;
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #08080c;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(210, 95, 56, 0.35);
+  border-radius: 3px;
+  border: 1px solid rgba(210, 95, 56, 0.4);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(210, 95, 56, 0.75);
+  border-color: #d25f38;
+  box-shadow: 0 0 8px rgba(210, 95, 56, 0.5);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #d25f38;
+}
+
+::-webkit-scrollbar-corner {
+  background: #08080c;
+}
+
+/* Hide scrollbar utility (used on tab strips, nav) */
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar,
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* ─── Custom Leaflet Map Tooltip & Marker Styles ─────────────────── */
+.leaflet-tooltip {
+  background: #090a10 !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.85) !important;
+  padding: 8px 12px !important;
+  font-family: 'Geist Mono', 'Space Grotesk', monospace !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.leaflet-tooltip-left::before {
+  border-left-color: #090a10 !important;
+}
+.leaflet-tooltip-right::before {
+  border-right-color: #090a10 !important;
+}
+.leaflet-tooltip-top::before {
+  border-top-color: #090a10 !important;
+}
+.leaflet-tooltip-bottom::before {
+  border-bottom-color: #090a10 !important;
+}
+
+.map-micro-pin {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.map-micro-pin:hover {
+  transform: scale(1.25) translateY(-3px);
+  z-index: 9999 !important;
+}

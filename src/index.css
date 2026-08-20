@@ -1,0 +1,672 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ResponSync — Squarespace-derived design system
+   Monochrome. Black, white, and a four-step gray ramp. No hue anywhere.
+   Type scale, CTA system and color primitives are ported from
+   squarespace.com's own stylesheet.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Fonts ──────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: Clarkson;
+  src: url(/fonts/clarkson-300.woff2) format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Clarkson;
+  src: url(/fonts/clarkson-400.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Clarkson;
+  src: url(/fonts/clarkson-500.woff2) format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clarkson Serif";
+  src: url(/fonts/clarkson-serif-300.woff2) format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clarkson Serif";
+  src: url(/fonts/clarkson-serif-400.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── Tailwind theme tokens ──────────────────────────────────────────── */
+
+@theme {
+  /* Surfaces and ink — the entire palette. */
+  --color-paper: #f1f5f9;
+  --color-ink: #0f172a;
+  --color-near: #1e293b;
+  --color-subtle: #475569;
+  --color-muted: #64748b;
+  --color-line: rgba(15, 23, 42, 0.08);
+  --color-wash: #f8fafc;
+  --color-wash-strong: #e2e8f0;
+
+  /* Translucent shades, for overlays on either surface. */
+  --color-shade-50: rgba(15, 23, 42, 0.03);
+  --color-shade-100: rgba(15, 23, 42, 0.06);
+  --color-shade-200: rgba(15, 23, 42, 0.1);
+  --color-shade-light-50: rgba(255, 255, 255, 0.15);
+  --color-shade-light-100: rgba(255, 255, 255, 0.25);
+
+  --color-focus: #0ea5e9;
+
+  /* Accents. Deliberately chosen for colour psychology and for
+     colour-blind safety (green+blue avoids the red/green confusion axis).
+       safe  — cleared, operational, available, delivered, protected
+       info  — water, telemetry, informational, non-urgent official data */
+  --color-safe: #10b981;
+  --color-safe-strong: #059669;
+  --color-safe-wash: rgba(16, 185, 129, 0.1);
+  --color-info: #0ea5e9;
+  --color-info-strong: #0284c7;
+  --color-info-wash: rgba(14, 165, 233, 0.1);
+  /* Lifted variants for use on dark backdrops */
+  --color-safe-on-dark: #34d399;
+  --color-info-on-dark: #38bdf8;
+
+  --font-sans: "Plus Jakarta Sans", Clarkson, Helvetica, Arial, sans-serif;
+  --font-serif: "Clarkson Serif", Georgia, serif;
+  --font-mono: "Geist Mono", Clarkson, Helvetica, Arial, sans-serif;
+
+  --radius-cta: 9999px; /* Rounded pill style */
+}
+
+:root {
+  --paper: #f1f5f9;
+  --ink: #0f172a;
+  --near: #1e293b;
+  --subtle: #475569;
+  --muted: #64748b;
+  --line: rgba(15, 23, 42, 0.08);
+  --wash: #f8fafc;
+  --wash-strong: #e2e8f0;
+  --focus: #0ea5e9;
+  --safe: #10b981;
+  --safe-strong: #059669;
+  --safe-wash: rgba(16, 185, 129, 0.1);
+  --info: #0ea5e9;
+  --info-strong: #0284c7;
+  --info-wash: rgba(14, 165, 233, 0.1);
+  --safe-on-dark: #34d399;
+  --info-on-dark: #38bdf8;
+
+  --ease-sqsp: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-cta: cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: Clarkson, Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Everything below lives in Tailwind's `components` layer so plain utilities
+   (font-medium, hidden, text-xs, bg-*) always win over it. Without this the
+   unlayered rules outrank every utility and silently override them. */
+@layer components {
+  /* ═══ Type scale — ported from squarespace.com ═══════════════════════ */
+
+  .text--title1 { letter-spacing: -0.05em; font-size: clamp(48px, 2.27273rem + 3.63636vw, 50px); font-weight: 300; line-height: 1.04; }
+  .text--title2 { letter-spacing: -0.05em; font-size: clamp(44px, 2.02273rem + 3.63636vw, 46px); font-weight: 300; line-height: 1.04; }
+  .text--title3 { letter-spacing: -0.06em; font-size: clamp(38px, 0.920455rem + 7.27273vw, 42px); font-weight: 300; line-height: 1.04; }
+  .text--title4 { letter-spacing: -0.04em; font-size: clamp(34px, 10.9091vw - 0.0568182rem, 40px); font-weight: 300; line-height: 1.08; }
+  .text--subtitle1 { letter-spacing: -0.04em; font-size: 22px; line-height: 1.08; font-weight: 400; }
+  .text--subtitle2 { letter-spacing: -0.02em; font-size: 20px; line-height: 1.08; font-weight: 400; }
+  .text--subtitle3 { letter-spacing: -0.01em; font-size: 18px; font-weight: 500; line-height: 1.2; }
+  .text--body { letter-spacing: -0.001em; font-size: 15px; line-height: 1.4; font-weight: 400; }
+  .text--body-medium { letter-spacing: -0.001em; font-size: 15px; font-weight: 500; line-height: 1.4; }
+  .text--footnote { font-size: 12px; line-height: 1.4; font-weight: 400; }
+  .text--eyebrow { text-transform: uppercase; font-size: 11px; font-weight: 500; line-height: 1; letter-spacing: 0.08em; }
+
+  @media (width >= 375px) {
+    .text--title1 { font-size: clamp(50px, 2.23577rem + 3.79404vw, 64px); }
+    .text--title2 { font-size: clamp(46px, 2.4939rem + 1.62602vw, 52px); }
+    .text--title3 { font-size: clamp(42px, 1.98984rem + 2.71003vw, 52px); }
+    .text--title4 { font-size: 40px; }
+    .text--subtitle1 { font-size: 26px; }
+  }
+  @media (width >= 744px) {
+    .text--title1 { font-size: clamp(64px, 9.42029vw - 0.380435rem, 90px); }
+    .text--title2 { font-size: clamp(52px, 2.57609rem + 1.44928vw, 56px); }
+    .text--title3 { font-size: clamp(52px, 2.57609rem + 1.44928vw, 56px); }
+    .text--subtitle2 { font-size: 24px; }
+    .text--subtitle3 { font-size: 20px; }
+  }
+  @media (width >= 1020px) {
+    .text--title1 { font-size: clamp(90px, 3.17308rem + 3.84615vw, 100px); }
+    .text--title2 { font-size: clamp(56px, 0.0673077rem + 5.38462vw, 70px); }
+    .text--title3 { font-size: clamp(56px, 2.51923rem + 1.53846vw, 60px); }
+    .text--title4 { font-size: clamp(40px, 0.0480769rem + 3.84615vw, 50px); }
+    .text--subtitle1 { font-size: 32px; }
+    .text--subtitle2 { font-size: 26px; }
+  }
+  @media (width >= 1280px) {
+    .text--title1 { font-size: 100px; }
+    .text--title2 { font-size: clamp(70px, 3.375rem + 1.25vw, 72px); }
+    .text--title3 { font-size: clamp(60px, 1.75rem + 2.5vw, 64px); }
+    .text--title4 { font-size: clamp(50px, 0.125rem + 3.75vw, 56px); }
+    .text--subtitle1 { font-size: 36px; }
+  }
+  @media (width >= 1440px) {
+    .text--title1 { font-size: clamp(100px, 2.5rem + 4.16667vw, 120px); }
+    .text--title2 { font-size: clamp(72px, 7.08333vw - 1.875rem, 106px); }
+    .text--title3 { font-size: clamp(64px, 2.5rem + 1.66667vw, 72px); }
+    .text--title4 { font-size: clamp(56px, 0.125rem + 3.75vw, 74px); }
+    .text--subtitle1 { font-size: 40px; }
+  }
+
+  .text--serif { font-family: "Clarkson Serif", Georgia, serif; font-weight: 300; }
+  .text--light { color: var(--paper); }
+  .text--muted { color: var(--muted); }
+  .text--subtle { color: var(--subtle); }
+
+  /* ═══ CTA system — ported from squarespace.com ═══════════════════════ */
+
+  .cta {
+    color: var(--ink);
+    cursor: pointer;
+    font-family: Clarkson, Helvetica, Arial, sans-serif;
+  }
+  .cta:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+  .cta--primary,
+  .cta--secondary {
+    appearance: none;
+    -webkit-font-smoothing: antialiased;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 4px;
+    justify-content: center;
+    align-items: center;
+    padding: 23px 28px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1em;
+    display: inline-flex;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.25s var(--ease-cta), box-shadow 0.25s var(--ease-cta), color 0.25s var(--ease-cta);
+  }
+
+  .cta--primary { background-color: var(--ink); color: var(--paper); }
+  .cta--primary:hover { background-color: var(--near); }
+  .cta--primary.cta--light { background-color: var(--paper); color: var(--ink); }
+  .cta--primary.cta--light:hover { background-color: var(--wash-strong); }
+
+  .cta--secondary { background-color: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .cta--secondary:hover { background-color: var(--shade-100, #0000000d); }
+  .cta--secondary.cta--light { color: var(--paper); box-shadow: inset 0 0 0 1px #ffffff3d; }
+  .cta--secondary.cta--light:hover { background-color: #ffffff14; }
+
+  .cta--compact { padding: 12px 18px; }
+  .cta--mini { padding: 8px 14px; font-size: 12px; }
+
+  .cta--tertiary {
+    appearance: none;
+    text-transform: uppercase;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1em;
+    display: inline-flex;
+    position: relative;
+    background-image: linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor);
+    background-position: 0 100%, 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 51% 1px, 50% 1px;
+  }
+  .cta--tertiary:hover { background-size: 0 1px, 0 1px; transition: background-size 0.35s var(--ease-cta); }
+
+  .cta--inline {
+    appearance: none;
+    font-size: inherit;
+    line-height: inherit;
+    text-transform: inherit;
+    background-color: transparent;
+    padding: 0;
+    display: inline;
+  }
+
+  /* Arrow that slides in on hover, as on squarespace.com */
+  .cta__arrow { display: inline-flex; margin-left: 8px; transition: transform 0.35s var(--ease-cta); }
+  .cta--primary:hover .cta__arrow,
+  .cta--secondary:hover .cta__arrow,
+  .cta--tertiary:hover .cta__arrow { transform: translateX(2px); }
+
+  /* ═══ Monochrome severity system ═════════════════════════════════════
+     No hue. Severity reads through fill, weight and shape:
+       critical → solid mark, 2px rule, medium type, black
+       advisory → hatched mark, 1px mid-gray rule, regular type, #1a1a1a
+       info     → outline mark, 1px light rule, regular type, #5a5a5a
+     ══════════════════════════════════════════════════════════════════ */
+
+  .sev-mark {
+    transition: background-color 0.25s var(--ease-sqsp), box-shadow 0.25s var(--ease-sqsp);
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border-radius: 1px;
+  }
+  .sev-mark--critical { background: var(--ink); }
+  .sev-mark--advisory {
+    background: repeating-linear-gradient(45deg, var(--ink) 0 1.5px, transparent 1.5px 3.5px);
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  /* Informational / telemetry / water — blue. */
+  .sev-mark--info { background: var(--info-wash); box-shadow: inset 0 0 0 1.5px var(--info); }
+  /* Cleared / operational / available / delivered — green. */
+  .sev-mark--ok { background: var(--safe-wash); box-shadow: inset 0 0 0 1.5px var(--safe); }
+  /* Not-yet-reached / inactive / disabled. Carries no meaning, so no accent. */
+  .sev-mark--neutral { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+
+  /* On a black surface the base accents lose contrast; `.on-dark` lifts them.
+     Critical inverts to a white mark, since black on black is invisible. */
+  .on-dark .sev-mark--critical { background: var(--paper); }
+  .on-dark .sev-mark--advisory {
+    background: repeating-linear-gradient(45deg, var(--paper) 0 1.5px, transparent 1.5px 3.5px);
+    box-shadow: inset 0 0 0 1px var(--paper);
+  }
+  .on-dark .sev-mark--info { background: #4d9dff1f; box-shadow: inset 0 0 0 1.5px var(--info-on-dark); }
+  .on-dark .sev-mark--ok { background: #2fbf881f; box-shadow: inset 0 0 0 1.5px var(--safe-on-dark); }
+  .on-dark .sev-mark--neutral { background: transparent; box-shadow: inset 0 0 0 1px #ffffff3d; }
+  .on-dark .sev-text--info { color: var(--info-on-dark); }
+  .on-dark .sev-text--ok { color: var(--safe-on-dark); }
+
+  /* Round variant for map pins and inline dots */
+  .sev-mark--round { border-radius: 50%; }
+
+  .sev-text--critical { color: var(--ink); font-weight: 500; }
+  .sev-text--advisory { color: var(--near); font-weight: 400; }
+  .sev-text--info { color: var(--info-strong); font-weight: 400; }
+  .sev-text--ok { color: var(--safe-strong); font-weight: 400; }
+
+  /* Row / card emphasis */
+  .sev-row--critical { border-left: 2px solid var(--ink); }
+  .sev-row--advisory { border-left: 1px solid var(--muted); }
+  .sev-row--info { border-left: 2px solid var(--info); }
+  .sev-row--ok { border-left: 2px solid var(--safe); }
+
+  /* Badges */
+  .badge {
+    transition: background-color 0.25s var(--ease-sqsp), color 0.25s var(--ease-sqsp), box-shadow 0.25s var(--ease-sqsp);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 9999px; /* Rounded pill style badge */
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .badge--critical { background: #ef4444; color: #ffffff; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25); }
+  .badge--advisory { background: #f59e0b; color: #ffffff; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25); }
+  .badge--info { background: #0ea5e9; color: #ffffff; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.25); }
+  .badge--safe { background: #10b981; color: #ffffff; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25); }
+  .badge--quiet { background: var(--wash-strong); color: var(--subtle); }
+
+  /* ═══ Surfaces ══════════════════════════════════════════════════════ */
+
+  .panel {
+    background: rgba(255, 255, 255, 0.74);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 12px; /* Smooth rounded corners */
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
+  }
+  .panel--wash {
+    background: rgba(248, 250, 252, 0.74);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+  }
+  .hairline { border-color: var(--line); }
+
+  .lift { transition: box-shadow 0.35s var(--ease-sqsp), border-color 0.35s var(--ease-sqsp), transform 0.35s var(--ease-sqsp); }
+  .lift:hover {
+    border-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+/* ═══ Liquid glass ═══════════════════════════════════════════════════
+   For floating layers ONLY — map chrome, modals, popovers, toasts, sticky
+   bars. Anything that sits *above* content and wants the content to show
+   through. Flat content panels stay opaque `.panel`; glass on a flat panel
+   over a white page is just grey mush.
+
+   Three ingredients make it read as glass rather than "a blurry box":
+     1. blur + saturate, so colour beneath blooms through
+     2. a specular top edge (inset white highlight) — the lit rim
+     3. a soft, wide, very light shadow so it floats rather than sticks
+   Radius is 12–16px here, not the 4px of flat chrome: glass is liquid.
+   ══════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  .glass {
+    position: relative;
+    background: rgba(255, 255, 255, 0.65);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 18px; /* Rounder liquid glass edges */
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.02),
+      0 8px 32px rgba(15, 23, 42, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transition:
+      background-color 0.3s var(--ease-sqsp),
+      box-shadow 0.3s var(--ease-sqsp),
+      border-color 0.3s var(--ease-sqsp),
+      transform 0.3s var(--ease-sqsp);
+  }
+
+  /* Lensed rim — a hairline that catches light at the top and fades at the
+     bottom, which is what separates glass from flat translucency. */
+  .glass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.25) 38%,
+      rgba(255, 255, 255, 0) 60%,
+      rgba(15, 23, 42, 0.04) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .glass--raised {
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow:
+      0 2px 4px rgba(15, 23, 42, 0.02),
+      0 16px 48px rgba(15, 23, 42, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
+  }
+
+  .glass--interactive:hover {
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow:
+      0 2px 6px rgba(15, 23, 42, 0.03),
+      0 16px 40px rgba(15, 23, 42, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+  .glass--interactive:active { transform: scale(0.985); }
+
+  /* On dark surfaces — the black hero, a dark map, a scrim. */
+  .glass--dark {
+    background: rgba(18, 18, 18, 0.55);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 12px 40px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    color: var(--paper);
+  }
+  .glass--dark::after {
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.32) 0%,
+      rgba(255, 255, 255, 0.06) 40%,
+      rgba(255, 255, 255, 0) 62%,
+      rgba(0, 0, 0, 0.24) 100%
+    );
+  }
+
+  /* A pill of glass — segmented controls, toolbars, chips. */
+  .glass-pill { border-radius: 999px; }
+
+  /* A tab/segment sitting inside a glass toolbar. */
+  .glass-seg {
+    border-radius: 10px;
+    transition:
+      background-color 0.25s var(--ease-sqsp),
+      color 0.25s var(--ease-sqsp),
+      box-shadow 0.25s var(--ease-sqsp);
+  }
+  .glass-seg--active {
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .glass--dark .glass-seg--active {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    color: var(--paper);
+  }
+
+  /* Glass divider — barely there, catches light. */
+  .glass-rule {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.06),
+      rgba(0, 0, 0, 0.1)
+    );
+  }
+}
+
+/* No backdrop-filter (older Firefox, some Linux) → fall back to a solid
+   surface so the chrome never becomes unreadable over a busy map. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: rgba(255, 255, 255, 0.96); }
+  .glass--dark { background: rgba(18, 18, 18, 0.94); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass { background: rgba(255, 255, 255, 0.96); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .glass--dark { background: rgba(18, 18, 18, 0.94); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass, .glass-seg { transition: none; }
+  .glass--interactive:active { transform: none; }
+}
+
+/* ═══ Scrollbars — hairline, monochrome ═════════════════════════════ */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar,
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* ═══ Leaflet — neat, professional, monochrome ══════════════════════ */
+
+.leaflet-container {
+  background: var(--wash) !important;
+  font-family: Clarkson, Helvetica, Arial, sans-serif !important;
+}
+
+/* Positron is already near-neutral. Hold most of its colour back but let the
+   water keep a trace of blue — water reading as blue is the one piece of map
+   colour every reader decodes without a legend. */
+.leaflet-tile-pane {
+  filter: saturate(0.55) contrast(1.02);
+}
+
+.leaflet-tooltip {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 12px #00000014 !important;
+  padding: 8px 10px !important;
+  font-family: Clarkson, Helvetica, Arial, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  backdrop-filter: none !important;
+}
+.leaflet-tooltip-left::before { border-left-color: var(--line) !important; }
+.leaflet-tooltip-right::before { border-right-color: var(--line) !important; }
+.leaflet-tooltip-top::before { border-top-color: var(--line) !important; }
+.leaflet-tooltip-bottom::before { border-bottom-color: var(--line) !important; }
+
+.leaflet-popup-content-wrapper {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 16px #0000001a !important;
+}
+.leaflet-popup-tip { background: var(--paper) !important; border: 1px solid var(--line) !important; }
+
+.leaflet-bar,
+.leaflet-control-zoom {
+  border: 1px solid var(--line) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+.leaflet-bar a,
+.leaflet-control-zoom a {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  border-bottom: 1px solid var(--line) !important;
+  font-weight: 400 !important;
+}
+.leaflet-bar a:hover,
+.leaflet-control-zoom a:hover { background: var(--wash) !important; }
+
+.leaflet-control-attribution {
+  background: #ffffffcc !important;
+  color: var(--muted) !important;
+  font-family: Clarkson, Helvetica, Arial, sans-serif !important;
+  font-size: 10px !important;
+  border-top-left-radius: 4px;
+}
+.leaflet-control-attribution a { color: var(--subtle) !important; }
+
+.map-micro-pin {
+  transition: transform 0.2s var(--ease-sqsp);
+  cursor: pointer;
+}
+.map-micro-pin:hover { transform: scale(1.15); z-index: 9999 !important; }
+
+/* ═══ Motion ════════════════════════════════════════════════════════ */
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes rs-modal-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rs-modal-surface-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(25px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-mono {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.rs-modal-scrim { animation: rs-modal-scrim-in 0.3s var(--ease-sqsp) both; }
+.rs-modal-surface { animation: rs-modal-surface-in 0.3s var(--ease-sqsp) both; }
+.animate-marquee { animation: marquee 60s linear infinite; }
+.animate-reveal { animation: reveal-up 0.8s var(--ease-sqsp) both; }
+.animate-pulse-mono { animation: pulse-mono 2s ease-in-out infinite; }
+
+/* Circular Map Overlays pulsing animations */
+@keyframes zone-pulse-anim {
+  0%, 100% {
+    fill-opacity: 0.12;
+    stroke-opacity: 0.9;
+  }
+  50% {
+    fill-opacity: 0.04;
+    stroke-opacity: 0.55;
+  }
+}
+.pulsing-zone-circle {
+  animation: zone-pulse-anim 3.5s ease-in-out infinite;
+}
+
+@keyframes inundation-pulse-anim {
+  0%, 100% {
+    fill-opacity: 0.18;
+    stroke-opacity: 0.95;
+  }
+  50% {
+    fill-opacity: 0.08;
+    stroke-opacity: 0.5;
+  }
+}
+.pulsing-inundation-circle {
+  animation: inundation-pulse-anim 2.8s ease-in-out infinite;
+}
+
+.reveal { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-reveal,
+  .animate-pulse-mono,
+  .rs-modal-scrim,
+  .rs-modal-surface { animation: none; }
+  .lift { transition: none; }
+}

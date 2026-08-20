@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>ResponSync — Predictive Disaster Response</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Typography is self-hosted Clarkson; see src/index.css. No webfont CDN. -->
+    <link rel="preload" href="/fonts/clarkson-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/clarkson-500.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+  <body class="bg-white text-black antialiased selection:bg-black selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

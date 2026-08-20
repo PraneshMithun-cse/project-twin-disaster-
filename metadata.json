@@ -1,0 +1,6 @@
+{
+  "name": "ResponSync - AI Digital Twin for Disaster Response",
+  "description": "Live virtual city representation combining real-time weather, traffic, IoT sensors, citizen reports, and explainable AI for predictive flood response.",
+  "requestFramePermissions": ["geolocation", "camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
