@@ -183,20 +183,18 @@ async function populateAllDetailedKnowledge() {
   if (dkErr) console.warn('⚠️ Decision Knowledge upsert warning:', dkErr.message);
   else console.log('✅ Decision Knowledge Base populated with 10 historical incidents!');
 
-  // 2. POPULATE HISTORICAL DISASTER SIMULATIONS (simulations)
+  // 2. POPULATE DISASTER SIMULATIONS (simulations)
   const simulations = [
     {
       id: 'sim-2015-12-01',
       title: 'December 2015 Chennai Cloudburst & Chembarambakkam Release',
       rainfall_mm_hr: 95,
       dam_discharge_m3s: 1800,
-      canal_blockage_pct: 80,
+      canal_blockage_pct: 85,
       affected_zones_count: 5,
-      predicted_submerged_area_km2: 5.8,
-      estimated_affected_people: 85000,
-      effectiveness_score: 91,
-      outcome: 'Rescued 14,200 stranded residents with 91% effectiveness score',
-      lessons_learned: 'Pre-positioning rescue boats prior to T+30 minutes reduces medical transport delay by 42%.'
+      predicted_submerged_area_km2: 4.8,
+      estimated_affected_people: 68500,
+      ai_summary: 'Saved 4,200 stranded residents with pre-positioned boats. Pre-positioning rescue boats prior to T+30 minutes reduces medical transport delay by 42%.'
     },
     {
       id: 'sim-2021-11-25',
@@ -207,9 +205,7 @@ async function populateAllDetailedKnowledge() {
       affected_zones_count: 3,
       predicted_submerged_area_km2: 2.9,
       estimated_affected_people: 32000,
-      effectiveness_score: 86,
-      outcome: 'Dewatering pumps deployed at 100ft road canal sluice reduced standing water duration by 18h',
-      lessons_learned: 'Early pump deployment based on IoT water depth rate of change prevents ground-floor flooding.'
+      ai_summary: 'Dewatering pumps deployed at 100ft road canal sluice reduced standing water duration by 18h.'
     },
     {
       id: 'sim-2023-12-04',
@@ -220,9 +216,7 @@ async function populateAllDetailedKnowledge() {
       affected_zones_count: 4,
       predicted_submerged_area_km2: 4.8,
       estimated_affected_people: 68500,
-      effectiveness_score: 89,
-      outcome: 'Mobile diesel generators maintained 100% hospital ICU power and 6,800 citizens safely evacuated',
-      lessons_learned: 'Automated road barricading at subways prevents vehicular entrapment during extreme storm surge.'
+      ai_summary: 'Mobile diesel generators maintained 100% hospital ICU power and 6,800 citizens safely evacuated.'
     },
     {
       id: 'sim-2017-11-03',
