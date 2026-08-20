@@ -1,7 +1,7 @@
 -- ============================================================================
--- ResponSync: AI Decision Digital Twin & Facility Safety - Full Supabase PostgreSQL / PostGIS Schema
--- Schema Version: 2.0 (Full Production Specification)
--- Pilot Area: Chennai Velachery & Adyar Corridor + Sai Fireworks Industrial Site
+-- ResponSync: AI Decision Digital Twin - Complete Supabase PostgreSQL / PostGIS Schema
+-- ResponSync Version: 1.0 (TDD Section 13 Specification)
+-- Pilot Area: Chennai Velachery & Adyar Corridor
 -- ============================================================================
 
 -- 1. Enable Required Extensions
@@ -9,24 +9,12 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- 2. Clean Drop Existing Tables (CASCADE)
-DROP TABLE IF EXISTS whatsapp_dispatches CASCADE;
-DROP TABLE IF EXISTS facility_incidents CASCADE;
-DROP TABLE IF EXISTS facility_employees CASCADE;
-DROP TABLE IF EXISTS exit_routes CASCADE;
-DROP TABLE IF EXISTS muster_hubs CASCADE;
-DROP TABLE IF EXISTS blueprint_sensors CASCADE;
-DROP TABLE IF EXISTS facility_zones CASCADE;
-DROP TABLE IF EXISTS facilities CASCADE;
-DROP TABLE IF EXISTS cascading_edges CASCADE;
-DROP TABLE IF EXISTS cascading_nodes CASCADE;
-DROP TABLE IF EXISTS xai_recommendations CASCADE;
-DROP TABLE IF EXISTS agent_logs CASCADE;
-DROP TABLE IF EXISTS emergency_alerts CASCADE;
 DROP TABLE IF EXISTS evacuation_routes CASCADE;
 DROP TABLE IF EXISTS decision_knowledge CASCADE;
+DROP TABLE IF EXISTS simulation_results CASCADE;
 DROP TABLE IF EXISTS simulations CASCADE;
-DROP TABLE IF EXISTS iot_sensors CASCADE;
 DROP TABLE IF EXISTS reports CASCADE;
+DROP TABLE IF EXISTS citizen_reports CASCADE;
 DROP TABLE IF EXISTS risk_zones CASCADE;
 DROP TABLE IF EXISTS weather_cache CASCADE;
 DROP TABLE IF EXISTS resources CASCADE;
@@ -34,25 +22,18 @@ DROP TABLE IF EXISTS shelters CASCADE;
 DROP TABLE IF EXISTS hospitals CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
--- ============================================================================
--- PILLAR I: USER ACCOUNTS & ACCESS CONTROL
--- ============================================================================
-
+-- 3. Create Users Table
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email TEXT UNIQUE NOT NULL,
     full_name TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'citizen' CHECK (role IN ('authority', 'responder', 'citizen', 'admin', 'safety_officer')),
+    role TEXT NOT NULL DEFAULT 'citizen' CHECK (role IN ('authority', 'responder', 'citizen', 'admin')),
     agency_name TEXT,
     phone TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- ============================================================================
--- PILLAR II: DISASTER GIS & SPATIAL INFRASTRUCTURE
--- ============================================================================
-
--- Citizen Hazard Reports (SOS & WhatsApp Ingest)
+-- 4. Create Citizen Reports Table
 CREATE TABLE reports (
     id TEXT PRIMARY KEY,
     reporter_name TEXT DEFAULT 'Anonymous Citizen',
@@ -60,124 +41,18 @@ CREATE TABLE reports (
     location_name TEXT NOT NULL,
     coordinates DOUBLE PRECISION[] NOT NULL, -- [latitude, longitude]
     geom GEOMETRY(Point, 4326),
-    hazard_type TEXT NOT NULL CHECK (hazard_type IN ('waterlogging', 'road_submerged', 'trapped_citizens', 'medical_emergency', 'power_outage', 'infrastructure_damage', 'other')),
+    hazard_type TEXT NOT NULL CHECK (hazard_type IN ('waterlogging', 'road_submerged', 'trapped_citizens', 'medical_emergency', 'power_outage', 'other')),
     severity TEXT NOT NULL CHECK (severity IN ('critical', 'high', 'medium', 'low')),
     description TEXT NOT NULL,
     image_url TEXT,
     ai_validation_score INT DEFAULT 90,
     ai_validated_category TEXT,
     ai_summary TEXT,
-    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'dispatched', 'in_progress', 'resolved')),
-    assigned_resource_id TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'in_progress', 'resolved')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Risk Zones (Flood / Inundation Polygons)
-CREATE TABLE risk_zones (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    risk_score DOUBLE PRECISION NOT NULL CHECK (risk_score BETWEEN 0 AND 100),
-    confidence_score DOUBLE PRECISION DEFAULT 92.0,
-    priority_level TEXT NOT NULL CHECK (priority_level IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')),
-    population_at_risk INT NOT NULL DEFAULT 0,
-    current_water_level_meters DOUBLE PRECISION DEFAULT 0.0,
-    predicted_water_level_30m DOUBLE PRECISION DEFAULT 0.0,
-    predicted_water_level_1h DOUBLE PRECISION DEFAULT 0.0,
-    predicted_water_level_2h DOUBLE PRECISION DEFAULT 0.0,
-    rainfall_rate_mm_hr DOUBLE PRECISION DEFAULT 0.0,
-    drainage_congestion_pct INT DEFAULT 0,
-    estimated_time_to_inundation_min INT DEFAULT 120,
-    status TEXT NOT NULL DEFAULT 'monitoring' CHECK (status IN ('safe', 'monitoring', 'warning', 'evacuating', 'submerged')),
-    center_coordinates DOUBLE PRECISION[] NOT NULL,
-    boundary_geom GEOMETRY(Polygon, 4326),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- IoT Telemetry Sensor Nodes
-CREATE TABLE iot_sensors (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('water_level', 'rain_gauge', 'flow_rate', 'structural_strain')),
-    coordinates DOUBLE PRECISION[] NOT NULL,
-    geom GEOMETRY(Point, 4326),
-    current_value DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-    unit TEXT NOT NULL,
-    threshold_warning DOUBLE PRECISION NOT NULL,
-    threshold_critical DOUBLE PRECISION NOT NULL,
-    battery_pct INT DEFAULT 100,
-    signal_pct INT DEFAULT 95,
-    status TEXT NOT NULL DEFAULT 'normal' CHECK (status IN ('normal', 'warning', 'critical', 'offline')),
-    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Emergency Response Assets & Resources
-CREATE TABLE resources (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('fire_truck', 'ambulance', 'rescue_boat', 'boat', 'ndrf_team', 'ndrf', 'pump', 'bus', 'police_patrol', 'medical_unit', 'relief_truck')),
-    status TEXT NOT NULL CHECK (status IN ('available', 'en_route', 'deployed', 'maintenance')),
-    assigned_zone_id TEXT REFERENCES risk_zones(id) ON DELETE SET NULL,
-    crew_count INT DEFAULT 4,
-    fuel_or_supplies_pct INT DEFAULT 100,
-    contact_number TEXT,
-    coordinates DOUBLE PRECISION[] NOT NULL,
-    geom GEOMETRY(Point, 4326),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Relief Shelters
-CREATE TABLE shelters (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    address TEXT NOT NULL,
-    capacity INT NOT NULL,
-    current_occupancy INT DEFAULT 0,
-    food_supplies_days INT DEFAULT 7,
-    medical_staff_present BOOLEAN DEFAULT TRUE,
-    power_backup BOOLEAN DEFAULT TRUE,
-    status TEXT NOT NULL CHECK (status IN ('open', 'filling_fast', 'near_capacity', 'full', 'closed')),
-    contact_person TEXT,
-    contact_phone TEXT,
-    coordinates DOUBLE PRECISION[] NOT NULL,
-    geom GEOMETRY(Point, 4326),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Emergency Medical Hospitals
-CREATE TABLE hospitals (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    address TEXT NOT NULL,
-    total_capacity INT NOT NULL,
-    occupied_capacity INT DEFAULT 0,
-    icu_beds_total INT DEFAULT 50,
-    icu_beds_available INT DEFAULT 10,
-    has_trauma_center BOOLEAN DEFAULT TRUE,
-    status TEXT NOT NULL CHECK (status IN ('operational', 'normal', 'strained', 'near_capacity', 'full', 'diverting', 'flooded')),
-    contact_person TEXT,
-    contact_phone TEXT,
-    coordinates DOUBLE PRECISION[] NOT NULL,
-    geom GEOMETRY(Point, 4326),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Evacuation Routes
-CREATE TABLE evacuation_routes (
-    id TEXT PRIMARY KEY,
-    origin_name TEXT NOT NULL,
-    destination_shelter_name TEXT NOT NULL,
-    destination_shelter_id TEXT REFERENCES shelters(id) ON DELETE SET NULL,
-    distance_km DOUBLE PRECISION NOT NULL DEFAULT 5.2,
-    estimated_time_minutes INT NOT NULL DEFAULT 15,
-    safety_score_pct INT NOT NULL DEFAULT 95,
-    hazards_avoided TEXT[] NOT NULL DEFAULT '{}',
-    turn_by_turn_instructions TEXT[] NOT NULL DEFAULT '{}',
-    waypoints DOUBLE PRECISION[][] NOT NULL,
-    geom GEOMETRY(LineString, 4326),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Weather Data Cache
+-- 5. Create Weather Cache Table
 CREATE TABLE weather_cache (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     location TEXT NOT NULL DEFAULT 'Chennai Velachery-Adyar Corridor',
@@ -190,158 +65,38 @@ CREATE TABLE weather_cache (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- ============================================================================
--- PILLAR III: INDUSTRIAL FACILITY SAFETY & FIRE EVACUATION MODULE
--- ============================================================================
-
--- Industrial Facilities
-CREATE TABLE facilities (
+-- 6. Create Risk Zones Table
+CREATE TABLE risk_zones (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    industry TEXT NOT NULL DEFAULT 'Fireworks & Pyrotechnics',
-    address TEXT NOT NULL,
-    coordinates DOUBLE PRECISION[] NOT NULL,
-    geom GEOMETRY(Point, 4326),
-    licence_no TEXT,
-    safety_officer TEXT NOT NULL,
-    safety_officer_phone TEXT NOT NULL,
-    blueprint_width_m DOUBLE PRECISION NOT NULL DEFAULT 240,
-    blueprint_height_m DOUBLE PRECISION NOT NULL DEFAULT 150,
-    blueprint_data JSONB NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    risk_score DOUBLE PRECISION NOT NULL CHECK (risk_score BETWEEN 0 AND 100),
+    priority_level TEXT NOT NULL CHECK (priority_level IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')),
+    population_at_risk INT NOT NULL DEFAULT 0,
+    predicted_water_level_30m DOUBLE PRECISION DEFAULT 0.0,
+    predicted_water_level_1h DOUBLE PRECISION DEFAULT 0.0,
+    status TEXT NOT NULL DEFAULT 'monitoring' CHECK (status IN ('safe', 'monitoring', 'warning', 'evacuating', 'submerged')),
+    center_coordinates DOUBLE PRECISION[] NOT NULL,
+    boundary_geom GEOMETRY(Polygon, 4326),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Facility Zones (Rooms/Sheds/Yards)
-CREATE TABLE facility_zones (
-    id TEXT PRIMARY KEY,
-    facility_id TEXT NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    kind TEXT NOT NULL CHECK (kind IN ('production', 'storage', 'chemical', 'office', 'utility', 'open_yard', 'corridor')),
-    hazard_class TEXT NOT NULL CHECK (hazard_class IN ('explosive', 'flammable', 'toxic', 'standard')),
-    x DOUBLE PRECISION NOT NULL,
-    y DOUBLE PRECISION NOT NULL,
-    w DOUBLE PRECISION NOT NULL,
-    h DOUBLE PRECISION NOT NULL,
-    headcount INT DEFAULT 0,
-    notes TEXT
-);
-
--- Blueprint Sensors (Indoor Heat/Smoke/Flame Detectors)
-CREATE TABLE blueprint_sensors (
-    id TEXT PRIMARY KEY,
-    facility_id TEXT NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
-    zone_id TEXT REFERENCES facility_zones(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('smoke', 'heat', 'flame', 'gas_leak', 'spark_detector', 'manual_call_point')),
-    x DOUBLE PRECISION NOT NULL,
-    y DOUBLE PRECISION NOT NULL,
-    status TEXT NOT NULL DEFAULT 'normal' CHECK (status IN ('normal', 'warning', 'triggered', 'offline')),
-    current_value DOUBLE PRECISION DEFAULT 0.0,
-    unit TEXT DEFAULT '°C',
-    threshold_critical DOUBLE PRECISION DEFAULT 65.0,
-    battery_pct INT DEFAULT 100,
-    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Safe Muster Assembly Points
-CREATE TABLE muster_hubs (
-    id TEXT PRIMARY KEY,
-    facility_id TEXT NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    x DOUBLE PRECISION NOT NULL,
-    y DOUBLE PRECISION NOT NULL,
-    capacity INT NOT NULL DEFAULT 100,
-    safe_radius_m DOUBLE PRECISION DEFAULT 30,
-    is_primary BOOLEAN DEFAULT TRUE,
-    landmark TEXT
-);
-
--- Indoor Egress Exit Routes
-CREATE TABLE exit_routes (
-    id TEXT PRIMARY KEY,
-    facility_id TEXT NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    from_zone_id TEXT REFERENCES facility_zones(id) ON DELETE CASCADE,
-    to_hub_id TEXT REFERENCES muster_hubs(id) ON DELETE CASCADE,
-    waypoints JSONB NOT NULL, -- Array of {x, y}
-    width_m DOUBLE PRECISION DEFAULT 2.5,
-    distance_m DOUBLE PRECISION DEFAULT 45,
-    is_primary BOOLEAN DEFAULT TRUE
-);
-
--- Facility Employees (Roster)
-CREATE TABLE facility_employees (
-    id TEXT PRIMARY KEY,
-    facility_id TEXT NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
-    employee_code TEXT NOT NULL,
-    name TEXT NOT NULL,
-    phone TEXT NOT NULL,
-    department TEXT NOT NULL,
-    shift TEXT DEFAULT 'A',
-    assigned_zone_id TEXT REFERENCES facility_zones(id) ON DELETE SET NULL,
-    status TEXT DEFAULT 'unknown' CHECK (status IN ('safe_muster', 'unaccounted', 'in_hazard_zone', 'evacuating', 'unknown')),
-    last_seen_time TIMESTAMP WITH TIME ZONE
-);
-
--- Facility Incident Events
-CREATE TABLE facility_incidents (
-    id TEXT PRIMARY KEY,
-    facility_id TEXT NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
-    phase TEXT NOT NULL CHECK (phase IN ('triggered', 'verifying', 'evacuating', 'all_clear')),
-    triggered_by_sensor_id TEXT REFERENCES blueprint_sensors(id) ON DELETE SET NULL,
-    triggered_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    evacuation_order_at TIMESTAMP WITH TIME ZONE,
-    all_clear_at TIMESTAMP WITH TIME ZONE,
-    total_on_site INT DEFAULT 0,
-    safe_count INT DEFAULT 0,
-    unaccounted_count INT DEFAULT 0,
-    incident_data JSONB
-);
-
--- WhatsApp Emergency Dispatch Log
-CREATE TABLE whatsapp_dispatches (
-    id TEXT PRIMARY KEY,
-    facility_id TEXT NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
-    incident_id TEXT REFERENCES facility_incidents(id) ON DELETE CASCADE,
-    employee_id TEXT REFERENCES facility_employees(id) ON DELETE CASCADE,
-    phone TEXT NOT NULL,
-    employee_name TEXT NOT NULL,
-    stage TEXT NOT NULL CHECK (stage IN ('queued', 'sending', 'sent', 'failed')),
-    provider TEXT NOT NULL DEFAULT 'simulated',
-    message_text TEXT NOT NULL,
-    response_received TEXT,
-    sent_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- ============================================================================
--- PILLAR IV: MULTI-AGENT AI, EXPLAINABILITY & SIMULATION AUDIT TRAIL
--- ============================================================================
-
--- Autonomous Agent Activity Stream
-CREATE TABLE agent_logs (
-    id TEXT PRIMARY KEY,
-    agent_name TEXT NOT NULL,
-    action TEXT NOT NULL,
-    details TEXT NOT NULL,
-    severity TEXT NOT NULL DEFAULT 'info' CHECK (severity IN ('info', 'warning', 'alert', 'success')),
-    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Explainable AI (XAI) Recommendation Proposals
-CREATE TABLE xai_recommendations (
+-- 7. Create Disaster Simulations Table
+CREATE TABLE simulations (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    target_zone_id TEXT REFERENCES risk_zones(id) ON DELETE SET NULL,
-    target_zone_name TEXT NOT NULL,
-    action_type TEXT NOT NULL CHECK (action_type IN ('evacuate', 'deploy_boats', 'open_sluice_gate', 'block_road', 'setup_relief', 'medical_dispatch')),
-    priority TEXT NOT NULL CHECK (priority IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')),
-    recommended_resources JSONB NOT NULL,
-    reasoning JSONB NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'executed')),
+    rainfall_mm_hr DOUBLE PRECISION NOT NULL,
+    dam_discharge_m3s DOUBLE PRECISION NOT NULL,
+    canal_blockage_pct INT DEFAULT 50,
+    affected_zones_count INT DEFAULT 0,
+    predicted_submerged_area_km2 DOUBLE PRECISION DEFAULT 0.0,
+    estimated_affected_people INT DEFAULT 0,
+    effectiveness_score INT DEFAULT 85,
+    outcome TEXT,
+    lessons_learned TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Historical Decision Knowledge Base (RAG Matching)
+-- 8. Create Decision Knowledge Base Table (Historical Scenarios)
 CREATE TABLE decision_knowledge (
     id TEXT PRIMARY KEY,
     historical_event TEXT NOT NULL,
@@ -353,149 +108,109 @@ CREATE TABLE decision_knowledge (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Hydrodynamic What-If Simulation Runs
-CREATE TABLE simulations (
-    id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    rainfall_mm_hr DOUBLE PRECISION NOT NULL,
-    dam_discharge_m3s DOUBLE PRECISION NOT NULL,
-    canal_blockage_pct INT DEFAULT 50,
-    bridge_status TEXT DEFAULT 'restricted',
-    duration_hours INT DEFAULT 3,
-    high_tide_overlap BOOLEAN DEFAULT FALSE,
-    mitigations_applied JSONB,
-    affected_zones_count INT DEFAULT 0,
-    predicted_submerged_area_km2 DOUBLE PRECISION DEFAULT 0.0,
-    estimated_affected_people INT DEFAULT 0,
-    critical_road_blocks TEXT[] DEFAULT '{}',
-    recommended_deployments JSONB,
-    risk_timeline JSONB,
-    ai_summary TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Emergency Alerts & Public Broadcasts
-CREATE TABLE emergency_alerts (
-    id TEXT PRIMARY KEY,
-    headline TEXT NOT NULL,
-    zone TEXT NOT NULL,
-    severity TEXT NOT NULL CHECK (severity IN ('info', 'warning', 'danger', 'critical')),
-    agencies_notified TEXT[] NOT NULL DEFAULT '{}',
-    instructions TEXT NOT NULL,
-    acknowledged BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Cascading Infrastructure Topology Nodes
-CREATE TABLE cascading_nodes (
+-- 9. Create Emergency Resources Table
+CREATE TABLE resources (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    node_type TEXT NOT NULL CHECK (node_type IN ('power_substation', 'sluice_gate', 'telecom_tower', 'hospital_feeder', 'subway_pump')),
-    criticality TEXT NOT NULL CHECK (criticality IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')),
-    risk_score DOUBLE PRECISION DEFAULT 50.0,
-    status TEXT DEFAULT 'operational' CHECK (status IN ('operational', 'degraded', 'failed')),
+    type TEXT NOT NULL CHECK (type IN ('boat', 'pump', 'ambulance', 'ndrf', 'bus', 'fire_truck')),
+    status TEXT NOT NULL CHECK (status IN ('available', 'en_route', 'deployed', 'maintenance')),
+    assigned_zone_id TEXT,
+    coordinates DOUBLE PRECISION[] NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Cascading Infrastructure Edge Dependencies
-CREATE TABLE cascading_edges (
+-- 10. Create Emergency Shelters Table
+CREATE TABLE shelters (
     id TEXT PRIMARY KEY,
-    source_node_id TEXT REFERENCES cascading_nodes(id) ON DELETE CASCADE,
-    target_node_id TEXT REFERENCES cascading_nodes(id) ON DELETE CASCADE,
-    dependency_type TEXT NOT NULL,
-    failure_impact_weight DOUBLE PRECISION DEFAULT 1.0
+    name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    capacity INT NOT NULL,
+    current_occupancy INT DEFAULT 0,
+    status TEXT NOT NULL CHECK (status IN ('open', 'filling_fast', 'full', 'closed')),
+    contact_phone TEXT,
+    has_medical_unit BOOLEAN DEFAULT TRUE,
+    has_food_supply BOOLEAN DEFAULT TRUE,
+    coordinates DOUBLE PRECISION[] NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 11. Create Hospitals Table
+CREATE TABLE hospitals (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    total_beds INT NOT NULL,
+    available_icu_beds INT DEFAULT 0,
+    trauma_center_active BOOLEAN DEFAULT TRUE,
+    status TEXT NOT NULL CHECK (status IN ('operational', 'strained', 'diverting', 'flooded')),
+    coordinates DOUBLE PRECISION[] NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 12. Create Evacuation Routes Table
+CREATE TABLE evacuation_routes (
+    id TEXT PRIMARY KEY,
+    origin_name TEXT NOT NULL,
+    destination_shelter_name TEXT NOT NULL,
+    destination_shelter_id TEXT REFERENCES shelters(id),
+    safety_score_pct INT NOT NULL DEFAULT 95,
+    hazards_avoided TEXT[] NOT NULL,
+    waypoints DOUBLE PRECISION[][] NOT NULL, -- Array of [lat, lng] pairs
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ============================================================================
--- POSTGIS TRIGGERS & SPATIAL HELPERS
+-- INITIAL SEED DATA (Chennai Velachery & Adyar Corridor)
 -- ============================================================================
 
--- Auto-populate PostGIS Point Geometries from Coordinates Arrays [lat, lng]
-CREATE OR REPLACE FUNCTION update_point_geom()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.coordinates IS NOT NULL AND array_length(NEW.coordinates, 1) = 2 THEN
-        NEW.geom = ST_SetSRID(ST_MakePoint(NEW.coordinates[2], NEW.coordinates[1]), 4326);
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Seed Risk Zones
+INSERT INTO risk_zones (id, name, risk_score, priority_level, population_at_risk, predicted_water_level_30m, predicted_water_level_1h, status, center_coordinates)
+VALUES 
+('zone-velachery-south', 'Velachery South (Vijaya Nagar)', 88.5, 'CRITICAL', 42000, 1.4, 2.2, 'evacuating', ARRAY[12.9785, 80.2205]),
+('zone-guindy-subway', 'Guindy Railway Subway Corridor', 94.0, 'CRITICAL', 18500, 1.9, 2.8, 'submerged', ARRAY[13.0067, 80.2117]),
+('zone-kotturpuram', 'Kotturpuram Adyar River Bank', 76.2, 'HIGH', 24600, 0.9, 1.5, 'warning', ARRAY[13.0231, 80.2411]),
+('zone-taramani-link', 'Taramani 100ft Canal Link', 54.1, 'MEDIUM', 10000, 0.4, 0.8, 'monitoring', ARRAY[12.9863, 80.2432]);
 
-CREATE TRIGGER trg_reports_geom BEFORE INSERT OR UPDATE ON reports FOR EACH ROW EXECUTE FUNCTION update_point_geom();
-CREATE TRIGGER trg_sensors_geom BEFORE INSERT OR UPDATE ON iot_sensors FOR EACH ROW EXECUTE FUNCTION update_point_geom();
-CREATE TRIGGER trg_resources_geom BEFORE INSERT OR UPDATE ON resources FOR EACH ROW EXECUTE FUNCTION update_point_geom();
-CREATE TRIGGER trg_shelters_geom BEFORE INSERT OR UPDATE ON shelters FOR EACH ROW EXECUTE FUNCTION update_point_geom();
-CREATE TRIGGER trg_hospitals_geom BEFORE INSERT OR UPDATE ON hospitals FOR EACH ROW EXECUTE FUNCTION update_point_geom();
-CREATE TRIGGER trg_facilities_geom BEFORE INSERT OR UPDATE ON facilities FOR EACH ROW EXECUTE FUNCTION update_point_geom();
+-- Seed Historical Decision Knowledge Base
+INSERT INTO decision_knowledge (id, historical_event, similarity_pct, key_matches, retrieved_strategy, historical_outcome, ai_refinement)
+VALUES
+('sim-2015-12-01', 'December 2015 Chennai Cloudburst & Chembarambakkam Release', 94, ARRAY['85mm/hr Cloudburst intensity', 'High tide estuarine backwater', 'Velachery Lake sluice overflow'], 'Immediate deployment of 4 NDRF boat units to Vijaya Nagar & pre-evacuation of Kotturpuram tenements', 'Rescued 4,200 stranded residents with 91% effectiveness score', 'Apply 2015 strategy but add automated road barricading at Guindy subway to prevent vehicle stalling.'),
+('sim-2021-11-25', 'November 2021 Cyclone Nivar Severe Inundation', 86, ARRAY['Heavy catchment rain in Adyar', 'Drainage silt blockage 80%'], 'High-capacity 500HP dewatering pumps stationed at 100ft road canal sluice', 'Reduced standing water duration by 14 hours across Velachery South', 'Deploy pumps 30 minutes earlier based on live IoT sensor water depth derivative.'),
+('sim-2023-12-04', 'December 2023 Cyclone Michaung Overflow', 89, ARRAY['Extreme rainfall 90mm/hr', 'Subway inundation'], 'Pre-positioning mobile emergency generators at hospital feeders & boat dispatch', 'Maintained critical ICU power at 100% and evacuated 2,100 citizens', 'Integrate real-time satellite radar altimetry for early dam release warnings.');
 
--- ============================================================================
--- INDEXES FOR MAXIMUM QUERY PERFORMANCE
--- ============================================================================
+-- Seed Emergency Shelters
+INSERT INTO shelters (id, name, address, capacity, current_occupancy, status, contact_phone, coordinates)
+VALUES
+('sh-01', 'Velachery Community Center Relief Camp', '100ft Road, Velachery, Chennai', 1200, 480, 'open', '+91 44 2243 0001', ARRAY[12.9815, 80.2225]),
+('sh-02', 'Guindy Government Higher Secondary School', 'GST Road, Guindy, Chennai', 850, 620, 'filling_fast', '+91 44 2234 1122', ARRAY[13.0089, 80.2135]),
+('sh-03', 'Kotturpuram Corporation Relief Hall', 'Adyar River Road, Kotturpuram, Chennai', 600, 150, 'open', '+91 44 2441 5566', ARRAY[13.0245, 80.2425]);
 
-CREATE INDEX idx_reports_geom ON reports USING GIST (geom);
-CREATE INDEX idx_sensors_geom ON iot_sensors USING GIST (geom);
-CREATE INDEX idx_resources_geom ON resources USING GIST (geom);
-CREATE INDEX idx_shelters_geom ON shelters USING GIST (geom);
-CREATE INDEX idx_hospitals_geom ON hospitals USING GIST (geom);
+-- Seed Emergency Resources
+INSERT INTO resources (id, name, type, status, assigned_zone_id, coordinates)
+VALUES
+('res-01', 'NDRF Motorboat Fleet A (4 Boats)', 'boat', 'deployed', 'zone-velachery-south', ARRAY[12.9790, 80.2210]),
+('res-02', 'Heavy Dewatering Pump 500HP #1', 'pump', 'deployed', 'zone-guindy-subway', ARRAY[13.0060, 80.2110]),
+('res-03', '108 Emergency Ambulance Unit #4', 'ambulance', 'available', NULL, ARRAY[12.9850, 80.2260]),
+('res-04', 'Disaster Relief Transit Bus Fleet', 'bus', 'en_route', 'zone-kotturpuram', ARRAY[13.0210, 80.2400]);
 
-CREATE INDEX idx_reports_status ON reports (status);
-CREATE INDEX idx_sensors_status ON iot_sensors (status);
-CREATE INDEX idx_resources_status ON resources (status);
-CREATE INDEX idx_facility_employees_fac ON facility_employees (facility_id);
-CREATE INDEX idx_agent_logs_time ON agent_logs (timestamp DESC);
+-- Seed Initial Citizen Reports
+INSERT INTO reports (id, reporter_name, phone, location_name, coordinates, hazard_type, severity, description, status)
+VALUES
+('rep-001', 'Ramesh Kumar', '+91 98401 23456', 'Velachery Vijaya Nagar Bus Stand', ARRAY[12.9785, 80.2205], 'waterlogging', 'high', 'Severe waterlogging near bus stand. Water depth approx 2.5ft and rising.', 'verified'),
+('rep-002', 'Priya Sundaram', '+91 94440 98765', 'Guindy Railway Subway', ARRAY[13.0067, 80.2117], 'road_submerged', 'critical', 'Subway completely submerged. Two cars stalled in water. Avoid route.', 'in_progress');
 
--- ============================================================================
--- ROW LEVEL SECURITY (RLS) POLICIES FOR FULL APP ACCESSIBILITY
--- ============================================================================
-
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+-- Enable Row Level Security (RLS) with Full Access Policies for App Integration
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE risk_zones ENABLE ROW LEVEL SECURITY;
-ALTER TABLE iot_sensors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE resources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shelters ENABLE ROW LEVEL SECURITY;
-ALTER TABLE hospitals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE evacuation_routes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE weather_cache ENABLE ROW LEVEL SECURITY;
-ALTER TABLE facilities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE facility_zones ENABLE ROW LEVEL SECURITY;
-ALTER TABLE blueprint_sensors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE muster_hubs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE exit_routes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE facility_employees ENABLE ROW LEVEL SECURITY;
-ALTER TABLE facility_incidents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE whatsapp_dispatches ENABLE ROW LEVEL SECURITY;
-ALTER TABLE agent_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE xai_recommendations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE resources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE decision_knowledge ENABLE ROW LEVEL SECURITY;
 ALTER TABLE simulations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emergency_alerts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cascading_nodes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cascading_edges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hospitals ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public all on users" ON users FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public all on reports" ON reports FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public all on risk_zones" ON risk_zones FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on iot_sensors" ON iot_sensors FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on resources" ON resources FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public all on shelters" ON shelters FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on hospitals" ON hospitals FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on evacuation_routes" ON evacuation_routes FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on weather_cache" ON weather_cache FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on facilities" ON facilities FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on facility_zones" ON facility_zones FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on blueprint_sensors" ON blueprint_sensors FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on muster_hubs" ON muster_hubs FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on exit_routes" ON exit_routes FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on facility_employees" ON facility_employees FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on facility_incidents" ON facility_incidents FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on whatsapp_dispatches" ON whatsapp_dispatches FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on agent_logs" ON agent_logs FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on xai_recommendations" ON xai_recommendations FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public all on resources" ON resources FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public all on decision_knowledge" ON decision_knowledge FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public all on simulations" ON simulations FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on emergency_alerts" ON emergency_alerts FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on cascading_nodes" ON cascading_nodes FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public all on cascading_edges" ON cascading_edges FOR ALL USING (true) WITH CHECK (true);
-
--- Schema setup complete.
+CREATE POLICY "Allow public all on hospitals" ON hospitals FOR ALL USING (true) WITH CHECK (true);
