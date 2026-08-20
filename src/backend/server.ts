@@ -176,8 +176,15 @@ function cleanAiText(text: string): string {
 }
 
 // Initialize Supabase Client with graceful fallback
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+const rawSupabaseUrl = process.env.SUPABASE_URL || '';
+const rawSupabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+
+const isPlaceholderUrl = !rawSupabaseUrl || rawSupabaseUrl.includes('your-supabase-project') || rawSupabaseUrl.includes('xyzcompany');
+const supabaseUrl = isPlaceholderUrl ? 'https://ipusfdckrmhsuxgcxtfo.supabase.co' : rawSupabaseUrl;
+const supabaseKey = (rawSupabaseKey && !rawSupabaseKey.includes('your_supabase')) 
+  ? rawSupabaseKey 
+  : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwdXNmZGNrcm1oc3V4Z2N4dGZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4NTUwMDAsImV4cCI6MjAyNTQzMTAwMH0.dummy_fallback_key';
+
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 // Database Auto-Seeder for Supabase
@@ -1283,6 +1290,70 @@ app.get('/api/reports', async (req, res) => {
 });
 
 // SHADOW-NET WHATSAPP INTEGRATION: Webhook endpoint for inbound citizen messages
+app.get('/api/whatsapp-webhook', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'responsync_verify_token';
+
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('[WhatsApp Webhook] Meta Cloud API challenge verified successfully.');
+    return res.status(200).send(challenge);
+  }
+
+  res.json({
+    status: 'online',
+    service: 'ResponSync Shadow-Net WhatsApp AI Webhook',
+    engine: 'Grok (xAI) Multi-Agent Emergency Broadcast Engine',
+    documentationUrl: '/api/whatsapp-webhook/tutorial',
+    metaWebhookEndpoint: '/api/whatsapp-webhook',
+    verifyToken: VERIFY_TOKEN
+  });
+});
+
+// Interactive WhatsApp Webhook Tutorial & Integration Guide API
+app.get('/api/whatsapp-webhook/tutorial', (req, res) => {
+  res.json({
+    title: 'ResponSync Shadow-Net WhatsApp Cloud API Tutorial & Integration Guide',
+    overview: 'Automated 24/7 AI-driven WhatsApp emergency messaging powered by Grok (xAI) and Meta Cloud API / Twilio webhooks.',
+    steps: [
+      {
+        step: 1,
+        title: 'Meta Developer Account & App Setup',
+        details: 'Create a Meta Developer account at developers.facebook.com, create a Business App, and add the "WhatsApp" product.'
+      },
+      {
+        step: 2,
+        title: 'Configure Webhook URL & Verify Token',
+        details: 'In Meta WhatsApp Dashboard -> Webhook configuration:',
+        webhookUrl: `${process.env.APP_URL || 'https://project-twin-disaster.vercel.app'}/api/whatsapp-webhook`,
+        verifyToken: process.env.WHATSAPP_VERIFY_TOKEN || 'responsync_verify_token',
+        subscribes: ['messages', 'messaging_postbacks']
+      },
+      {
+        step: 3,
+        title: 'Set Grok (xAI) API Credentials',
+        details: 'Set GROK_API_KEY in Vercel environment variables or Master Settings panel. Grok-2-latest will automatically synthesize emergency guidance.'
+      },
+      {
+        step: 4,
+        title: 'Test Inbound Emergency Citizen Reports',
+        details: 'Send a message to your WhatsApp Business number. The webhook processes the payload, runs Grok multi-agent reasoning, logs the incident to Supabase, and returns an automated SMS/WhatsApp response.'
+      }
+    ],
+    sampleCurlPayload: {
+      url: '/api/whatsapp-webhook',
+      method: 'POST',
+      body: {
+        message: 'Flooding near Velachery Vijaya Nagar 100ft road junction. Need rescue boat.',
+        phone: '+91 98765 43210',
+        name: 'Arun Kumar'
+      }
+    }
+  });
+});
+
 app.post('/api/whatsapp-webhook', async (req, res) => {
   try {
     const { message, phone, name } = req.body;
@@ -2048,7 +2119,7 @@ Return a JSON object with this EXACT structure:
 // 2. What-If Disaster Simulation Endpoint
 app.post('/api/ai/simulate', async (req, res) => {
   try {
-    const { params, mitigations } = req.body; // rainfallMmHr, chembarambakkamReleaseM3s, canalBlockagePct, bridgeStatus, durationHours, highTideOverlap
+    const { params } = req.body; // rainfallMmHr, chembarambakkamReleaseM3s, canalBlockagePct, bridgeStatus, durationHours, highTideOverlap
 
     if (!ai) {
       return res.json({
@@ -2058,7 +2129,7 @@ app.post('/api/ai/simulate', async (req, res) => {
           affectedZonesCount: params?.rainfallMmHr > 80 ? 4 : 2,
           predictedSubmergedAreaKm2: params?.rainfallMmHr > 80 ? 4.8 : 2.1,
           estimatedAffectedPeople: params?.rainfallMmHr > 80 ? 68500 : 24000,
-          criticalRoadBlocks: mitigations?.autoBarricadeSubways ? ["Guindy Subway (BARRICADED - Water Depth 3.2ft)", "Velachery 100ft Road Vijaya Nagar Junction"] : ["Guindy Subway (SUBMERGED & UNPROTECTED)", "Velachery 100ft Road Vijaya Nagar Junction"],
+          criticalRoadBlocks: ["Guindy Subway (3.2ft Submerged)", "Velachery 100ft Road Vijaya Nagar Junction", "Kotturpuram Bridge Approach"],
           recommendedDeployments: [
             { type: "Rescue Boat Units", count: 6, zone: "Velachery South" },
             { type: "Heavy Dewatering Pumps", count: 8, zone: "Guindy Subway & Taramani" },
@@ -2085,18 +2156,10 @@ Run a what-if simulation scenario with parameters:
 - Duration: ${params?.durationHours || 3} Hours
 - High Tide Overlap: ${params?.highTideOverlap ? 'Yes' : 'No'}
 
-ACTIVE MITIGATIONS APPLIED:
-- Deploy Dewatering Pumps: ${mitigations?.deployDewateringPumps ? 'Yes' : 'No'}
-- Preposition Boats: ${mitigations?.prepositionBoats ? 'Yes' : 'No'}
-- Auto-Barricade Subways: ${mitigations?.autoBarricadeSubways ? 'Yes' : 'No'}
-- Cell Broadcast Alert: ${mitigations?.cellBroadcastAlert ? 'Yes' : 'No'}
-- Priority Hospital Power: ${mitigations?.priorityHospitalPower ? 'Yes' : 'No'}
-
 CRITICAL FORMATTING & CONCISENESS RULES:
 - Keep all string fields short, concise, direct, and straight to the point.
 - Max 1-2 short sentences for aiSummary.
 - Do NOT use markdown symbols, asterisks (**), hashes (#), or conversational filler.
-- For "criticalRoadBlocks", dynamically generate an array of string descriptions for key roads/corridors based on the hazard level and the mitigations applied. If "Auto-Barricade Subways" is Yes, label vulnerable subways as "(BARRICADED & TRAFFIC DIVERTED)". If No, label them as "(SUBMERGED & UNPROTECTED)". For other roads use labels like "(CLOSED)", "(RESTRICTED - 1 Lane Active)", or "(Clear)".
 
 Return JSON response:
 {
@@ -2104,7 +2167,7 @@ Return JSON response:
   "affectedZonesCount": 4,
   "predictedSubmergedAreaKm2": 4.8,
   "estimatedAffectedPeople": 68500,
-  "criticalRoadBlocks": ["Guindy Subway (BARRICADED & TRAFFIC DIVERTED - Water Depth 2.1m)", "Velachery 100ft Road (SUBMERGED)", "Adyar Bridges Corridor (RESTRICTED)"],
+  "criticalRoadBlocks": ["Guindy Subway", "Velachery 100ft Road Vijaya Nagar Junction", "Kotturpuram Bridge Approach"],
   "recommendedDeployments": [
     {"type": "Rescue Boat Units", "count": 6, "zone": "Velachery South"},
     {"type": "Heavy Dewatering Pumps", "count": 8, "zone": "Guindy Subway & Taramani"},
@@ -2843,4 +2906,9 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export { app, startServer };
+export default app;

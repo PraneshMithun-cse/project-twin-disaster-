@@ -850,6 +850,41 @@ export default function SettingsPanel() {
                   <p>3. Get an active SMS-enabled phone number and enter it above.</p>
                   <p>4. Alternatively set <code className={CODE_CLASS}>TWILIO_ACCOUNT_SID</code>, <code className={CODE_CLASS}>TWILIO_AUTH_TOKEN</code>, <code className={CODE_CLASS}>TWILIO_PHONE_NUMBER</code> in environment.</p>
                 </HowTo>
+
+                {/* SHADOW-NET WHATSAPP CLOUD API TUTORIAL */}
+                <div className="mt-8 p-6 bg-paper border border-line rounded-lg space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-5 h-5 text-emerald-600" />
+                      <h4 className="text--subtitle3 text-ink">Shadow-Net WhatsApp Cloud API Webhook Tutorial</h4>
+                    </div>
+                    <span className="px-2.5 py-1 text-[11px] font-semibold tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full uppercase">
+                      Meta Verified &amp; Grok AI Ready
+                    </span>
+                  </div>
+                  
+                  <p className="text--body text-subtle">
+                    ResponSync connects automatically to Meta WhatsApp Cloud API and Twilio to receive inbound citizen emergency reports and synthesize 24/7 Grok AI safe evacuation guidance.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                    <div className="p-3 bg-slate-900 text-slate-200 rounded border border-slate-800 space-y-1">
+                      <div className="text-slate-400 font-sans font-medium text-[11px] uppercase tracking-wider">Webhook Callback URL</div>
+                      <div className="text-emerald-400 font-bold select-all overflow-x-auto">https://project-twin-disaster.vercel.app/api/whatsapp-webhook</div>
+                    </div>
+                    <div className="p-3 bg-slate-900 text-slate-200 rounded border border-slate-800 space-y-1">
+                      <div className="text-slate-400 font-sans font-medium text-[11px] uppercase tracking-wider">Meta Hub Verify Token</div>
+                      <div className="text-sky-400 font-bold select-all">responsync_verify_token</div>
+                    </div>
+                  </div>
+
+                  <HowTo title="4-Step WhatsApp Cloud API Setup Guide">
+                    <p>1. Open <a href="https://developers.facebook.com/" target="_blank" rel="noreferrer" className={LINK_CLASS}>Meta Developer Portal</a> and select your WhatsApp Business App.</p>
+                    <p>2. Go to <strong>WhatsApp &gt; Configuration</strong> and paste the Callback URL and Verify Token above.</p>
+                    <p>3. Subscribe to <code className={CODE_CLASS}>messages</code> webhook events.</p>
+                    <p>4. Save changes. When a citizen texts your WhatsApp number, Grok auto-generates safe evacuation instructions!</p>
+                  </HowTo>
+                </div>
               </div>
             </section>
           </div>

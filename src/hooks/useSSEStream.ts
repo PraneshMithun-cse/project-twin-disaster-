@@ -16,8 +16,8 @@ export function useSSEStream({ onNewReport, onNewLog, onNewAlert }: UseSSEStream
       eventSource.onmessage = (e) => {
         try {
           const parsed = JSON.parse(e.data);
-          if (parsed.type === 'citizen_report_created' && (parsed.payload || parsed.data)) {
-            const r = parsed.payload || parsed.data;
+          if (parsed.type === 'citizen_report_created' && parsed.payload) {
+            const r = parsed.payload;
             const rLat = Number(r.lat ?? (Array.isArray(r.coordinates) ? r.coordinates[0] : (r.coordinates?.lat ?? 12.9785)));
             const rLng = Number(r.lng ?? (Array.isArray(r.coordinates) ? r.coordinates[1] : (r.coordinates?.lng ?? 80.2205)));
 
