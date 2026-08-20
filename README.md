@@ -5,10 +5,7 @@ ResponSync is an autonomous, full-stack **AI Decision Digital Twin** — a live 
 
 The platform is purpose-built for the **Chennai Velachery–Adyar flood corridor**, the most flood-prone urban region in South India. It combines a 3-agent AI orchestration pipeline (powered by Google Gemini) with real-time geospatial intelligence to autonomously assess threats, simulate cascading impacts, optimize evacuation routes, and dispatch emergency resources.
  
-<a href="https://responsesync.ai.studio/
-">https://responsesync.ai.studio/
-</a> 
- <a href=""></a> 
+<a href="https://project-twin-disaster.vercel.app/">https://project-twin-disaster.vercel.app/</a> 
 ---
 
 ## 👥 Team Details & Project Metadata
