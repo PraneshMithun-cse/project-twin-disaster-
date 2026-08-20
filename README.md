@@ -24,8 +24,8 @@ The platform is purpose-built for the **Chennai Velachery–Adyar flood corridor
 | 1 | **GOPINATH R** | Team Lead & Frontend Engineering | [@goprocker](https://github.com/goprocker) |
 | 2 | **MEDA VENKATA SAI CHARAN** | Backend Infrastructure & API Services | [@NINJA981](https://github.com/NINJA981) |
 | 3 | **ANANYA HARISH** | Disaster Simulations Engine & Physics | [@ananyadharish](https://github.com/ananyadharish) |
-| 4 | **GOPI K** | Database Schemas & Supabase PostGIS | [@K-Gopi2007](https://github.com/K-Gopi2007) |
-| 5 | **SHIVANI SK** | Research & Development (R&D) | [@shivaniisk](https://github.com/shivaniisk) |
+| 4 | **PRANESH MITHUN** | Database Schemas & Supabase PostGIS | [@PraneshMithun-cse](https://github.com/PraneshMithun-cse) |
+| 5 | **PRITHVI** | Research & Development (R&D) | [@Prithvi4311](https://github.com/Prithvi4311) |
 
 ---
 
@@ -70,11 +70,12 @@ ResponSync bridges data silos and automates response planning through a real-tim
 |---|---|
 | **Frontend Framework** | React 19, Vite 6, TypeScript |
 | **Styling & Icons** | Vanilla CSS, Tailwind CSS v4, Lucide React, Motion (Framer) |
-| **Geospatial & Mapping** | Leaflet, React-Leaflet, OSRM (Open Source Routing Machine), Turf.js |
+| **Geospatial & Mapping** | Leaflet, OSRM (Open Source Routing Machine) |
 | **Backend Runtime** | Node.js (v24), Express 4 (TypeScript) |
 | **Database & ORM** | Supabase (PostgreSQL), PostGIS spatial extensions |
 | **AI / LLM Integration** | Google Gemini API (`@google/genai`), RAG Vector Similarity Matching |
 | **Real-time Engine** | Server-Sent Events (SSE) Broadcast Stream |
+| **Validation & Data Export** | Zod Schema Validation, SheetJS (xlsx) |
 | **Telemetry & Weather APIs** | Open-Meteo Weather & Flood Hydro-API, OpenWeatherMap API |
 | **Satellite GIS** | ESA Sentinel-1 SAR, NASA FIRMS |
 | **Authentication & Security** | JWT (JSON Web Tokens), RBAC, Dotenv, HTTPS/TLS |
